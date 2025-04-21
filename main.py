@@ -8,15 +8,12 @@ from telegram.ext import (
 
 from utils.logger import logger
 from telegram_bot.quedada_entry import quedada
+from telegram_bot.buttom_handler import button_handler
 import tracemalloc
 from dotenv import load_dotenv
 import os
-import structlog
-import logging
 
 tracemalloc.start()
-
-
 
 
 def get_bot_token():
@@ -45,7 +42,7 @@ def main():
         application.add_handler(CommandHandler(comm_string, funct))
         #logger.info("Command registered", command=comm_string, handler=funct.__name__)
 
-
+    application.add_handler(CallbackQueryHandler(button_handler))
 
 
     logger.info("Starting bot polling")
