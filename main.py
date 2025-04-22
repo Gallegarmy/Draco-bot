@@ -8,7 +8,7 @@ from telegram.ext import (
 
 from utils.logger import logger
 from telegram_bot.quedada_entry import quedada
-from telegram_bot.buttom_handler import button_handler
+from telegram_bot.button_handler import button_handler
 import tracemalloc
 from dotenv import load_dotenv
 import os
