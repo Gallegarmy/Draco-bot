@@ -1,4 +1,4 @@
-from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 def build_status_keyboard():
     keyboard = [
@@ -7,4 +7,4 @@ def build_status_keyboard():
             InlineKeyboardButton("🔒 Cerrada", callback_data="cerrada")
         ]
     ]
-    return keyboard
+    return InlineKeyboardMarkup(keyboard)
