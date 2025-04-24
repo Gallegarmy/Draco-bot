@@ -1,4 +1,5 @@
-from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
 
 def build_keyboard():
     keyboard = [
@@ -11,4 +12,4 @@ def build_keyboard():
             InlineKeyboardButton("➖ -1", callback_data="-1")
         ]
     ]
-    return keyboard
+    return InlineKeyboardMarkup(keyboard)
