@@ -18,6 +18,17 @@ def create_callback_data(action,year,month,day):
     """ Create the callback data associated to each button"""
     return CALENDAR_CALLBACK + ";" + ";".join([str(action),str(year),str(month),str(day)])
 
+def create_previous_month_info(action,year,month):
+    if month == 1:
+        return CALENDAR_CALLBACK + ";" + ";".join([str(action),str(year - 1), str(12)])
+    else:
+        return CALENDAR_CALLBACK + ";" + ";".join([str(action),str(year), str(month-1)])
+    
+def create_next_month_info(action,year,month):
+    if month == 12:
+        return CALENDAR_CALLBACK + ";" + ";".join([str(action),str(year + 1), str(1)])
+    else:
+        return CALENDAR_CALLBACK + ";" + ";".join([str(action),str(year), str(month+1)])
 
 def create_calendar(time_event_description:str,year=None,month=None):
     """
@@ -27,8 +38,14 @@ def create_calendar(time_event_description:str,year=None,month=None):
     :return: Returns the InlineKeyboardMarkup object with the calendar.
     """
     now = datetime.datetime.now()
-    if year == None: year = now.year
-    if month == None: month = now.month
+    if year == None: 
+        year = now.year
+    else:
+        year = datetime.datetime.strptime(year, "%Y").year
+    if month == None: 
+        month = now.month
+    else:
+        month =  datetime.datetime.strptime(month, "%m").month
     data_ignore = create_callback_data("IGNORE", year, month, 0)
     keyboard = []
     #First row - Month and Year
@@ -52,9 +69,9 @@ def create_calendar(time_event_description:str,year=None,month=None):
         keyboard.append(row)
     #Last row - Buttons
     row=[]
-    row.append(InlineKeyboardButton("<",callback_data=create_callback_data("PREV-MONTH",year,month,day)))
+    row.append(InlineKeyboardButton("<",callback_data=create_previous_month_info("PREV-MONTH",year,month)))
     row.append(InlineKeyboardButton(" ",callback_data=data_ignore))
-    row.append(InlineKeyboardButton(">",callback_data=create_callback_data("NEXT-MONTH",year,month,day)))
+    row.append(InlineKeyboardButton(">",callback_data=create_next_month_info("NEXT-MONTH",year,month)))
     keyboard.append(row)
 
     return InlineKeyboardMarkup(keyboard)
@@ -71,7 +88,6 @@ def process_calendar_selection(update,context):
     """
     ret_data = (False,None)
     query = update.callback_query
-    # print(query)
     (_,action,year,month,day) = separate_callback_data(query.data)
     curr = datetime.datetime(int(year), int(month), 1)
     if action == "IGNORE":

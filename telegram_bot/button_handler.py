@@ -16,17 +16,20 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     username = await get_username(update)
     action = query.data
+    
     if "PREV-MONTH" in action or "NEXT-MONTH" in action:
-        process_calendar_selection(update,context)
+        arguments = action.split(';')
+        if "start_date" in context.chat_data:            
+            reply_markup = create_calendar("end_date",arguments[2],arguments[3])
+            message = "Indique la fecha de fin"
+        else:
+            reply_markup = create_calendar("start_date",arguments[2],arguments[3])
+            message="Indique la fecha de inicio"
     else:
         if "start_date" in action:
             message, reply_markup = process_meeting_start_date(action,context)
         elif "start_time" in action:
             message, reply_markup = process_meeting_start_time(action,context)
-        elif "end_date" in action:
-            message, reply_markup = process_meeting_end_date(action,context)
-        elif "end_time" in action:
-            message, reply_markup = process_meeting_end_time(action,context)
         elif "Open" in action or "Closed" in action:
             message, reply_markup = process_meeting_type(action,context)
         
@@ -37,7 +40,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(response_msg)
             message = build_final_message(context)
             reply_markup = build_keyboard()
-        await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
+    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
 
 
 def process_meeting_start_date(action,context):
@@ -56,51 +59,13 @@ def process_meeting_start_date(action,context):
     return message, reply_markup
 
 def process_meeting_start_time(action,context):
-    message = "Indique la fecha de fin"
+    message = "Indique si la quedada es abierta o cerrada"
     # We trim the 'Start-' string to insert the hour into the context_data dictionary
     context.chat_data["start_time"] = re.sub('start_time-', '', str(action))
-    # We build the keyboard asking for an ending time
-    reply_markup = create_calendar('end_date')
-    logger.info("End date message sent")
+    # We build the keyboard asking for meeting status
+    reply_markup = build_status_keyboard()
+    logger.info("Status message sent")
     return message, reply_markup
-
-def process_meeting_end_date(action,context):
-    # We trim the 'CALENDAR;end_date;' string to insert the date into the context_data dictionary
-    context.chat_data["end_date"] = re.sub('CALENDAR;end_date;', '', str(action))
-    print(context.chat_data)
-    start_date = datetime.strptime(context.chat_data["start_date"], '%Y;%m;%d').date()
-    end_date = datetime.strptime(context.chat_data["end_date"], '%Y;%m;%d').date()
-    if start_date <= end_date :
-        message = "Indique la hora de fin"
-        reply_markup = build_time_keyboard('end_time')
-        log_message = "End time message sent"
-    else:
-        message = "La fecha de fin no puede ser anterior a la fecha de inicio"
-        reply_markup = create_calendar("start_date")
-        log_message = "End date was previous to Start date. End date message re-sent"
-    logger.info(log_message)
-    return message, reply_markup
-
-
-
-def process_meeting_end_time(action,context):
-    # We trim the 'End-' string to insert the hour into the context_data dictionary
-    context.chat_data["end_time"] = re.sub('end_time-', '', str(action))
-    start_time = datetime.strptime(context.chat_data["start_time"], '%H:%M').time()
-    end_time = datetime.strptime(context.chat_data["end_time"], '%H:%M').time()
-    if start_time > end_time:
-        message = "La hora de finalización no puede ser antes que la hora de inicio, vuelva a indicar la hora de finalización."
-        keyboard = build_time_keyboard('end_time')
-        log_message = "End time was previous to Start time. End message re-sent"
-    else:
-        message = "Indique si la quedada es abierta o cerrada"
-        # We trim the 'End-' string to insert the hour into the shared dictionary
-        keyboard = build_status_keyboard()
-        log_message = "Status message sent"
-    logger.info(log_message)
-    reply_markup = keyboard
-    return message, reply_markup
-
 
 def process_meeting_type(action,context):
     """
