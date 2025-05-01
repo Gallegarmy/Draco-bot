@@ -1,13 +1,18 @@
 from datetime import datetime
 
-def build_final_message(context):
+def build_final_message(event_dict):
+    start_date = event_dict["start_date"]
+    start_date = datetime.combine(start_date, datetime.min.time())
+
+    # datetime.strptime(start_date, '%Y;%m;%d').date()
+
     message=f'''
-QUEDADA JUEGOMESEO {context.chat_data["status"]}\n
-INICIO: {datetime.strptime(context.chat_data["start_date"], '%Y;%m;%d').date()}  {context.chat_data["start_time"]}\n
+QUEDADA JUEGOMESEO {event_dict["meeting_type"]}\n
+INICIO: {start_date.strftime("%d/%m/%Y")}  {event_dict["start_time"]}\n
 PARTICIPANTES:\n'''
-    for user in context.chat_data["joined"]:
-            if user[1] == 0:
-                message += f"-@{user[0]}\n"
-            else:
-                 message += f"-@{user[0]} +{user[1]}\n"
+    for user, num_guests in event_dict["players"].items():
+        if num_guests > 0:
+            message += f"-@{user} +{num_guests}\n"
+        else:
+            message += f"-@{user}\n"
     return message

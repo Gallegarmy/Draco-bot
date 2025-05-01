@@ -1,14 +1,16 @@
+from telegram import Update
 from telegram.ext import (
     CommandHandler,
     ApplicationBuilder,
     MessageHandler,
     filters,
-    CallbackQueryHandler,
+    CallbackQueryHandler, ConversationHandler, ContextTypes,
 )
 
+from telegram_bot.constants import ENTER_START_TIME, ENTER_MEETING_TYPE, ENTER_START_DATE
 from utils.logger import logger
 from telegram_bot.quedada_entry import quedada
-from telegram_bot.button_handler import button_handler
+from telegram_bot.button_handler import button_handler, attendance_button_handler
 import tracemalloc
 from dotenv import load_dotenv
 import os
@@ -16,10 +18,7 @@ import os
 tracemalloc.start()
 
 
-def get_bot_token():
-    token = os.environ["BOT_TOKEN"]
-    logger.info("Bot token retrieved successfully")
-    return token
+
 
 
 def main():
@@ -34,20 +33,30 @@ def main():
 
     logger.info("Application built", token=get_bot_token())
 
-    commands = {
-        "quedada": quedada,
-    }
-
-    for comm_string, funct in commands.items():
-        application.add_handler(CommandHandler(comm_string, funct))
-        #logger.info("Command registered", command=comm_string, handler=funct.__name__)
-
-    application.add_handler(CallbackQueryHandler(button_handler))
-
+    conversation_handler = ConversationHandler(
+        entry_points=[CommandHandler("quedada", quedada)],
+        states={
+            ENTER_START_TIME: [CallbackQueryHandler(button_handler)],
+            ENTER_START_DATE: [CallbackQueryHandler(button_handler)],
+            ENTER_MEETING_TYPE: [CallbackQueryHandler(button_handler)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
+    application.add_handler(conversation_handler)
+    application.add_handler(CallbackQueryHandler(attendance_button_handler))
 
     logger.info("Starting bot polling")
     application.run_polling()
     logger.info("Bot polling started successfully")
+
+
+def get_bot_token():
+    token = os.environ["BOT_TOKEN"]
+    logger.info("Bot token retrieved successfully")
+    return token
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    return ConversationHandler.END
 
 
 if __name__ == "__main__":
