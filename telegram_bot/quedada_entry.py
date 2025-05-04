@@ -2,7 +2,6 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from utils.logger import logger
 from .constants import MEETING_NAME
-from .calendar.telegramcalendar import create_calendar
 from .utils import get_username
 
 
@@ -14,6 +13,7 @@ async def quedada(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "creator_id": update.message.from_user.id,
         "meeting_name": None,
         "meeting_description": None,
+        "max_players": 30,
         "start_date": None,
         "start_time": None,
         "meeting_type": "Open",

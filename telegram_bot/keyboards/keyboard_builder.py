@@ -13,3 +13,5 @@ def build_attendance_keyboard(event_id):
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
+
+

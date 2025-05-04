@@ -10,18 +10,24 @@ The file **telegramcalendar.py** provides the user with two methods:
 
 ## Usage
 To use the telecram-calendar-keyboard you need to have [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot) installed first. A full working example on how to use telegram-calendar-keyboard is provided in *bot_example.py*. As you can see below, you create a calendar and add it to a message with a *reply_markup* parameter and then you can process it in a callbackqueyhandler method using the *process_calendar_selection* method:
+
 ```python
-def calendar_handler(bot,update):
+import telegram_bot.keyboards.calendar_keyboard
+
+import telegram_bot.keyboards.keyboard_builder
+
+
+def calendar_handler(bot, update):
     update.message.reply_text("Please select a date: ",
-                        reply_markup=telegramcalendar.create_calendar())
+                              reply_markup=telegram_bot.keyboards.calendar_keyboard.create_calendar_keyboard())
 
 
-def inline_handler(bot,update):
-    selected,date = telegramcalendar.process_calendar_selection(bot, update)
+def inline_handler(bot, update):
+    selected, date = telegramcalendar.process_calendar_selection(bot, update)
     if selected:
         bot.send_message(chat_id=update.callback_query.from_user.id,
-                        text="You selected %s" % (date.strftime("%d/%m/%Y")),
-                        reply_markup=ReplyKeyboardRemove())
+                         text="You selected %s" % (date.strftime("%d/%m/%Y")),
+                         reply_markup=ReplyKeyboardRemove())
 ```
 
 > For a more complex example please check out [renfe-notifier-bot](https://github.com/grcanosa/renfe-notifier-bot)
