@@ -7,8 +7,9 @@ def build_final_message(event_dict):
     # datetime.strptime(start_date, '%Y;%m;%d').date()
 
     message=f'''
-QUEDADA JUEGOMESEO {event_dict["meeting_type"]}\n
-INICIO: {start_date.strftime("%d/%m/%Y")}  {event_dict["start_time"]}\n
+{event_dict["meeting_name"]} {event_dict["meeting_type"]}\n
+{event_dict["meeting_description"]}\n
+{start_date.strftime("%d/%m/%Y")}  {event_dict["start_time"]}\n
 PARTICIPANTES:\n'''
     for user, num_guests in event_dict["players"].items():
         if num_guests > 0:
