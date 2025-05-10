@@ -17,9 +17,13 @@ from .utils import get_username
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
     query = update.callback_query
     action = query.data
-    if str(query.from_user.id) != str(context.chat_data["current"]["creator_id"]):
+    if str(query.from_user.id) != str(context.chat_data[event_message_id]["creator_id"]):
         return
 
     if any(x in action for x in ("PREV-MONTH", "NEXT-MONTH")):
@@ -50,10 +54,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def process_meeting_start_date(action,context):
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
     # We trim the 'CALENDAR;start_date;' string to insert the date into the context_data dictionary
     start_date = re.sub('CALENDAR;start_date;', '', str(action))
     start_date = datetime.strptime(start_date, '%Y;%m;%d').date()
-    context.chat_data["current"]["start_date"] = start_date
+    context.chat_data[event_message_id]["start_date"] = start_date
     message = "Indique la hora de inicio"
     reply_markup = build_time_keyboard('start_time')
     log_message = "Start time keyboard about to show"
@@ -61,9 +69,13 @@ def process_meeting_start_date(action,context):
     return message, reply_markup
 
 def process_meeting_start_time(action,context):
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
     message = "Indique si la quedada es abierta o cerrada"
     # We trim the 'Start-' string to insert the hour into the context_data dictionary
-    context.chat_data["current"]["start_time"] = re.sub('start_time-', '', str(action))
+    context.chat_data[event_message_id]["start_time"] = re.sub('start_time-', '', str(action))
     # We build the keyboard asking for meeting status
     reply_markup = build_meeting_type_keyboard()
     logger.info("Meeting type keyboad about to show")
@@ -76,8 +88,12 @@ def process_meeting_type(action, context):
     :param context:
     :return:
     """
-    context.chat_data["current"]["meeting_type"] = str(action)
-    message = build_final_message(context.chat_data["current"])
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
+    context.chat_data[event_message_id]["meeting_type"] = str(action)
+    message = build_final_message(context.chat_data[event_message_id])
     reply_markup = build_attendance_keyboard(context.chat_data["current_event_id"])
     logger.info("Summary keyboard about to show")
     return message, reply_markup
@@ -147,3 +163,4 @@ def is_fullgame(context, event_id):
     total_players = current_players + current_guests
     is_full_game = total_players >= int(context.chat_data[event_id]["max_players"])
     return is_full_game
+
