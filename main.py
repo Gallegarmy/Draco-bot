@@ -36,7 +36,7 @@ def main():
     logger.info("Application built", token=get_bot_token())
 
     conversation_handler = ConversationHandler(
-        entry_points=[CommandHandler("quedada", quedada), CallbackQueryHandler(edit_handler)],
+        entry_points=[CommandHandler("quedada", quedada), CallbackQueryHandler(edit_handler, pattern=r'\w+,edit')],
         states={
             MEETING_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, first_answer)],
             MEETING_DESCRIPTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, second_answer)],
