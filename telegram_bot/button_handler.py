@@ -1,5 +1,7 @@
 import re
+from contextlib import suppress
 
+import telegram
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 from utils.logger import logger
@@ -8,16 +10,20 @@ from datetime import datetime
 from .constants import ENTER_START_DATE, ENTER_START_TIME, ENTER_MEETING_TYPE
 from .final_message_builder import build_final_message
 from .keyboards.keyboard_builder import build_attendance_keyboard
+from .keyboards.calendar_keyboard import create_calendar_keyboard
 from .keyboards.time_keyboard_builder import build_time_keyboard
 from .keyboards.status_keyboard import build_meeting_type_keyboard
-from .calendar.telegramcalendar import create_calendar, process_calendar_selection
 from .utils import get_username
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
     query = update.callback_query
     action = query.data
-    if str(query.from_user.id) != str(context.chat_data["current"]["creator_id"]):
+    if str(query.from_user.id) != str(context.chat_data[event_message_id]["creator_id"]):
         return
 
     if any(x in action for x in ("PREV-MONTH", "NEXT-MONTH")):
@@ -26,7 +32,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         month = arguments[3]
         date_type = "start_date"
         message="Indique la fecha de inicio"
-        reply_markup = create_calendar(date_type, year, month)
+        reply_markup = create_calendar_keyboard(date_type, year, month)
         result = ENTER_START_DATE
     else:
         if "start_date" in action:
@@ -48,10 +54,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def process_meeting_start_date(action,context):
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
     # We trim the 'CALENDAR;start_date;' string to insert the date into the context_data dictionary
     start_date = re.sub('CALENDAR;start_date;', '', str(action))
     start_date = datetime.strptime(start_date, '%Y;%m;%d').date()
-    context.chat_data["current"]["start_date"] = start_date
+    context.chat_data[event_message_id]["start_date"] = start_date
     message = "Indique la hora de inicio"
     reply_markup = build_time_keyboard('start_time')
     log_message = "Start time keyboard about to show"
@@ -59,9 +69,13 @@ def process_meeting_start_date(action,context):
     return message, reply_markup
 
 def process_meeting_start_time(action,context):
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
     message = "Indique si la quedada es abierta o cerrada"
     # We trim the 'Start-' string to insert the hour into the context_data dictionary
-    context.chat_data["current"]["start_time"] = re.sub('start_time-', '', str(action))
+    context.chat_data[event_message_id]["start_time"] = re.sub('start_time-', '', str(action))
     # We build the keyboard asking for meeting status
     reply_markup = build_meeting_type_keyboard()
     logger.info("Meeting type keyboad about to show")
@@ -74,8 +88,12 @@ def process_meeting_type(action, context):
     :param context:
     :return:
     """
-    context.chat_data["current"]["meeting_type"] = str(action)
-    message = build_final_message(context.chat_data["current"])
+    if context.chat_data.get("edit_id", None) is None:    
+        event_message_id = "current"
+    else:
+        event_message_id = context.chat_data["edit_id"]
+    context.chat_data[event_message_id]["meeting_type"] = str(action)
+    message = build_final_message(context.chat_data[event_message_id])
     reply_markup = build_attendance_keyboard(context.chat_data["current_event_id"])
     logger.info("Summary keyboard about to show")
     return message, reply_markup
@@ -90,7 +108,8 @@ async def attendance_button_handler(update: Update, context: ContextTypes.DEFAUL
     message = build_final_message(context.chat_data[event_id])
     reply_markup = build_attendance_keyboard(event_id)
 
-    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
+    with suppress(telegram.error.BadRequest):
+        await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
 
 def handle_meeting_action(event_id, action, username, context):
     alert = False
@@ -103,9 +122,12 @@ def handle_meeting_action(event_id, action, username, context):
         if action == "join":
             response_msg = "Usuario ya agregado en la lista"
         elif action == "+1":
-            #We add +1 to the guest field
-            context.chat_data[event_id]["players"][username] += 1
-            response_msg = f"{username} +1!"
+            if is_fullgame(context, event_id):
+                response_msg = "Partida sin sitios disponibles"
+            else:
+                #We add +1 to the guest field
+                context.chat_data[event_id]["players"][username] += 1
+                response_msg = f"{username} +1!"
         elif action == "leave":
             #We remove the user from the list
             del context.chat_data[event_id]["players"][username]
@@ -118,12 +140,27 @@ def handle_meeting_action(event_id, action, username, context):
                 response_msg = "Sin invitados que quitar"
                 alert = True
     else:
-        if action == 'join':            
-            context.chat_data[event_id]["players"][username] = 0
-            response_msg = f"{username} joined!"
+        if action == 'join':
+            if is_fullgame(context, event_id):
+                response_msg = "Partida sin sitios disponibles"
+            else:
+                context.chat_data[event_id]["players"][username] = 0
+                response_msg = f"{username} joined!"
         elif action == "+1":
-            context.chat_data[event_id]["players"][username] += 0
-            response_msg = f"{username} +1!"
+            if is_fullgame(context, event_id):
+                response_msg = "Partida sin sitios disponibles"
+            else:
+                context.chat_data[event_id]["players"][username] += 0
+                response_msg = f"{username} +1!"
         elif action == '-1':
             response_msg = "El usuario no está en la lista"
     return alert, response_msg
+
+
+def is_fullgame(context, event_id):
+    current_players = len(context.chat_data[event_id]["players"].keys())
+    current_guests = sum(context.chat_data[event_id]["players"].values())
+    total_players = current_players + current_guests
+    is_full_game = total_players >= int(context.chat_data[event_id]["max_players"])
+    return is_full_game
+
