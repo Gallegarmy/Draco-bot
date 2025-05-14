@@ -7,7 +7,7 @@ from .keyboards.calendar_keyboard import create_calendar_keyboard
 from .keyboards.players_keyboard import create_num_keyboard
 
 
-async def first_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def first_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     if context.chat_data.get("edit_id", None) is None:    
         event_message_id = "current"
     else:
@@ -17,7 +17,7 @@ async def first_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return MEETING_DESCRIPTION
     
 
-async def second_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def second_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if context.chat_data.get("edit_id", None) is None:    
         event_message_id = "current"
     else:
@@ -28,7 +28,7 @@ async def second_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ENTER_NUM_PLAYERS
 
 
-async def process_num_players(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def process_num_players(update: Update, context: ContextTypes.DEFAULT_TYPE) ->int:
     if context.chat_data.get("edit_id", None) is None:    
         event_message_id = "current"
     else:

@@ -5,7 +5,7 @@ from .constants import MEETING_NAME
 from .utils import get_username
 
 
-async def quedada(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def quedada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     #Add the user that created the event to the dict
     event_id = update.message.message_id
     context.chat_data["current_event_id"] = str(event_id)
@@ -26,13 +26,3 @@ async def quedada(update: Update, context: ContextTypes.DEFAULT_TYPE):
     #Starts the routin that will ask for start time, end time and status
     await update.message.reply_text("¿Cuál es el nombre de la quedada?")
     return MEETING_NAME
-
-async def edit_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    event_id, action = query.data.split(',')
-    if action == "edit" and context.chat_data.get("edit_id", None) is None:        
-        context.chat_data["edit_id"] = event_id
-        logger.info(f"Building quedada message: message id {event_id}")
-        #Starts the routin that will ask for start time, end time and status
-        await query.message.reply_text("¿Cuál es el nombre de la quedada?")
-        return MEETING_NAME

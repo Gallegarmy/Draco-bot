@@ -10,9 +10,10 @@ from telegram.ext import (
 from telegram_bot.constants import ENTER_START_TIME, ENTER_MEETING_TYPE, ENTER_START_DATE, MEETING_NAME, \
     MEETING_DESCRIPTION, ENTER_NUM_PLAYERS
 from utils.logger import logger
-from telegram_bot.quedada_entry import quedada, edit_handler
+from telegram_bot.quedada_entry import quedada
 from telegram_bot.message_handler import first_answer, second_answer, process_num_players
-from telegram_bot.button_handler import button_handler, attendance_button_handler
+from telegram_bot.actions.action_handler import action_handler
+from telegram_bot.actions.attendance import attendance_button_handler
 import tracemalloc
 from dotenv import load_dotenv
 import os
@@ -36,14 +37,14 @@ def main():
     logger.info("Application built", token=get_bot_token())
 
     conversation_handler = ConversationHandler(
-        entry_points=[CommandHandler("quedada", quedada), CallbackQueryHandler(edit_handler, pattern=r'\w+,edit')],
+        entry_points=[CommandHandler("quedada", quedada)],
         states={
             MEETING_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, first_answer)],
             MEETING_DESCRIPTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, second_answer)],
             ENTER_NUM_PLAYERS: [CallbackQueryHandler(process_num_players)],
-            ENTER_START_TIME: [CallbackQueryHandler(button_handler)],
-            ENTER_START_DATE: [CallbackQueryHandler(button_handler)],
-            ENTER_MEETING_TYPE: [CallbackQueryHandler(button_handler)],
+            ENTER_START_TIME: [CallbackQueryHandler(action_handler)],
+            ENTER_START_DATE: [CallbackQueryHandler(action_handler)],
+            ENTER_MEETING_TYPE: [CallbackQueryHandler(action_handler)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )

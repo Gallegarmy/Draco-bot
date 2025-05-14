@@ -11,9 +11,6 @@ def build_attendance_keyboard(event_id):
             InlineKeyboardButton("❌ Dejar", callback_data=f"{event_id},leave"),
             InlineKeyboardButton("➖ -1", callback_data=f"{event_id},-1")
         ],
-        [   
-            InlineKeyboardButton("✏️ Editar Nombre", callback_data=f"{event_id},edit")
-        ],
     ]
     return InlineKeyboardMarkup(keyboard)
 
