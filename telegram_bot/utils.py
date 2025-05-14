@@ -48,3 +48,10 @@ async def get_thread_id(update: Update):
         thread_id = update.effective_message.message_thread_id
         return thread_id
     return None
+
+def is_fullgame(context, event_id):
+    current_players = len(context.chat_data[event_id]["players"].keys())
+    current_guests = sum(context.chat_data[event_id]["players"].values())
+    total_players = current_players + current_guests
+    is_full_game = total_players >= int(context.chat_data[event_id]["max_players"])
+    return is_full_game
