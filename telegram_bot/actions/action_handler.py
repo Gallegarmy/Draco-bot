@@ -9,13 +9,9 @@ from .meeting_type import process_meeting_type
 
 
 async def action_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> ConversationHandler:
-    if context.chat_data.get("edit_id", None) is None:    
-        event_message_id = "current"
-    else:
-        event_message_id = context.chat_data["edit_id"]
     query = update.callback_query
     action = query.data
-    if str(query.from_user.id) != str(context.chat_data[event_message_id]["creator_id"]):
+    if str(query.from_user.id) != str(context.chat_data["current"]["creator_id"]):
         return
 
     if any(x in action for x in ("PREV-MONTH", "NEXT-MONTH")):

@@ -13,12 +13,8 @@ def process_meeting_type(action: str,context: ContextTypes.DEFAULT_TYPE) -> (str
     :param context:
     :return:
     """
-    if context.chat_data.get("edit_id", None) is None:    
-        event_message_id = "current"
-    else:
-        event_message_id = context.chat_data["edit_id"]
-    context.chat_data[event_message_id]["meeting_type"] = str(action)
-    message = build_final_message(context.chat_data[event_message_id])
+    context.chat_data["current"]["meeting_type"] = str(action)
+    message = build_final_message(context.chat_data["current"])
     reply_markup = build_attendance_keyboard(context.chat_data["current_event_id"])
     logger.info("Summary keyboard about to show")
     return message, reply_markup
