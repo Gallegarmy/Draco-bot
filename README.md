@@ -51,7 +51,7 @@ draco-bot/
 
 ## 📸 Screenshots
 
-
+<img src=./images/screenshot.png />
 
 ## 🤝 Contributing
 
