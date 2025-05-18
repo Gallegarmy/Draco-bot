@@ -1,5 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
+
+from ..apis.gcalendar import create_event
 from ..constants import ENTER_START_DATE, ENTER_START_TIME, ENTER_MEETING_TYPE
 from ..keyboards.calendar_keyboard import create_calendar_keyboard
 from .start_date import process_meeting_start_date
@@ -32,7 +34,12 @@ async def action_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         elif "Abierta" in action or "Cerrada" in action:
             message, reply_markup = process_meeting_type(action,context)
             event_message_id = context.chat_data["current_event_id"]
+
+            # Persists the collected game info and creates the GCalendar event
             context.chat_data[event_message_id] = context.chat_data["current"]
+            create_event(context.chat_data[event_message_id])
+
+            # Cleans the draft game infoso that another game could be created
             del context.chat_data["current_event_id"]
             del context.chat_data["current"]
             result = ConversationHandler.END

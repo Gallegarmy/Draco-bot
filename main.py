@@ -20,10 +20,6 @@ import os
 
 tracemalloc.start()
 
-
-
-
-
 def main():
     logger.info("Starting the bot application")
 
