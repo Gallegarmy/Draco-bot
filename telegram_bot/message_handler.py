@@ -1,7 +1,7 @@
 
 from telegram import Update
 from telegram.ext import ContextTypes
-from .constants import MEETING_DESCRIPTION, ENTER_START_TIME, ENTER_NUM_PLAYERS
+from .constants import MEETING_DESCRIPTION, ENTER_NUM_PLAYERS, ENTER_START_DATE
 from utils.logger import logger
 from .keyboards.calendar_keyboard import create_calendar_keyboard
 from .keyboards.players_keyboard import create_num_keyboard
@@ -36,4 +36,4 @@ async def process_num_players(update: Update, context: ContextTypes.DEFAULT_TYPE
     context.chat_data[event_message_id]["max_players"] = update.callback_query.data
     await update.callback_query.edit_message_text("Indique la fecha de inicio", reply_markup=create_calendar_keyboard("start_date"))
     logger.info("Start time keyboard shown")
-    return ENTER_START_TIME
+    return ENTER_START_DATE

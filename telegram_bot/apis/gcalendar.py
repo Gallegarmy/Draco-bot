@@ -2,14 +2,23 @@ from googleapiclient.discovery import build
 import pickle
 import datetime as dt
 
+from utils.logger import logger
 
-with open("desktop_token.pkl", "rb") as token:
-    creds = pickle.load(token)
-service = build("calendar", "v3", credentials=creds)
+service = None
 
+try:
+    with open("desktop_token.pkl", "rb") as token:
+        creds = pickle.load(token)
+    service = build("calendar", "v3", credentials=creds)
+except FileNotFoundError:
+    logger.info("Could not create GCalendar API service: No token.pkl found")
 
 def create_event(game_info):
     global service
+
+    if service is None:
+        logger.info('Could not create calendar event due to the lack of a token')
+        return
 
     start_time = dt.time.fromisoformat(game_info['start_time'])
     start_dt = dt.datetime.combine(game_info['start_date'], start_time)
