@@ -7,10 +7,11 @@ from telegram.ext import (
     CallbackQueryHandler, ConversationHandler, ContextTypes,
 )
 
+from telegram_bot.actions.confirmation import process_confirmation
 from telegram_bot.actions.start_date import process_meeting_start_date
 from telegram_bot.actions.start_time import process_meeting_start_time
 from telegram_bot.constants import ENTER_START_TIME, ENTER_MEETING_TYPE, ENTER_START_DATE, MEETING_NAME, \
-    MEETING_DESCRIPTION, ENTER_NUM_PLAYERS
+    MEETING_DESCRIPTION, ENTER_NUM_PLAYERS, ENTER_CONFIRMATION
 from utils.logger import logger
 from telegram_bot.quedada_entry import quedada
 from telegram_bot.message_handler import first_answer, second_answer, process_num_players
@@ -43,6 +44,7 @@ def main():
             ENTER_START_DATE: [CallbackQueryHandler(process_meeting_start_date)],
             ENTER_START_TIME: [CallbackQueryHandler(process_meeting_start_time)],
             ENTER_MEETING_TYPE: [CallbackQueryHandler(process_meeting_type)],
+            ENTER_CONFIRMATION: [CallbackQueryHandler(process_confirmation)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )

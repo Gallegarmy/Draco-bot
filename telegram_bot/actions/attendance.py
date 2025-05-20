@@ -15,9 +15,9 @@ async def attendance_button_handler(update: Update, context: ContextTypes.DEFAUL
     alert, response_msg = handle_meeting_action(event_id, action, username,context)
     await query.answer(response_msg, show_alert=alert)
     logger.info(response_msg)
+
     message = build_final_message(context.chat_data[event_id])
     reply_markup = build_attendance_keyboard(event_id)
-
     with suppress(telegram.error.BadRequest):
         await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
 

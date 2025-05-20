@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from telegram import Update
 from telegram.ext import ContextTypes
 from utils.logger import logger
@@ -5,7 +7,7 @@ from .constants import MEETING_NAME
 from .utils import get_username
 
 
-async def quedada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
+async def quedada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     #Add the user that created the event to the dict
     event_id = update.message.message_id
     context.chat_data["current_event_id"] = str(event_id)
@@ -18,9 +20,9 @@ async def quedada(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
         "start_date": None,
         "start_time": None,
         "meeting_type": "Open",
-        "players": {
+        "players": defaultdict(int, {
             f"{await get_username(update)}":0
-        }
+        })
     }
     logger.info(f"Building quedada message: message id {event_id}")
     #Starts the routin that will ask for start time, end time and status

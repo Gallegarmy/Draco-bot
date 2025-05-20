@@ -28,7 +28,7 @@ async def second_answer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return ENTER_NUM_PLAYERS
 
 
-async def process_num_players(update: Update, context: ContextTypes.DEFAULT_TYPE) ->int:
+async def process_num_players(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if context.chat_data.get("edit_id", None) is None:    
         event_message_id = "current"
     else:
