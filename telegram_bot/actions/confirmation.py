@@ -21,7 +21,6 @@ async def process_confirmation(update: Update, context: CallbackContext) -> None
 
         logger.info("Summary keyboard about to show")
         message = build_final_message(context.chat_data["current"])
-        message = "¿Desea confirmar creación de la partida?\n" + message
         reply_markup = build_attendance_keyboard(context.chat_data["current_event_id"])
         await query.edit_message_text(message, reply_markup=reply_markup, parse_mode='Markdown')
 
