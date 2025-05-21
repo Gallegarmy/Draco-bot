@@ -57,15 +57,6 @@ def create_calendar_keyboard(time_event_description:str, year=None, month=None):
     return InlineKeyboardMarkup(keyboard)
 
 
-def create_callback_data(action,year,month,day=None):
-    """ Create the callback data associated to each button"""
-    tokens = [str(action), str(year), str(month)]
-    if day is not None:
-        tokens.append(str(day))
-
-    return CALENDAR_CALLBACK + ";" + ";".join(tokens)
-
-
 def create_previous_month_info(action,year,month):
     if month == 1:
         year -= 1
@@ -82,3 +73,16 @@ def create_next_month_info(action,year,month):
     else:
         month += 1
     return create_callback_data(action, year, month)
+
+
+def create_callback_data(action,year,month,day=None):
+    """
+    Create the callback data associated to each button with structure:
+        eg. CALENDAR;PREV-MONTH;2025;6
+        eg. CALENDAR;NEXT-MONTH;2025;5;25
+    """
+    tokens = [str(action), str(year), str(month)]
+    if day is not None:
+        tokens.append(str(day))
+
+    return CALENDAR_CALLBACK + ";" + ";".join(tokens)
